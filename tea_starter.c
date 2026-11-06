@@ -14,7 +14,7 @@ void feistel_enc(uint32_t v[2], const uint32_t k[4]) {
 }
         
 void feistel_dec(uint32_t v[2], const uint32_t k[4]) {
-    for (uint32_t i = 0; i < 64; i++){
+    for (int i = 63; i >= 0 ; i--){
 	   uint32_t tmp = v[1];
 	   v[1] = v[0];
 	   v[0] = tmp - F(v[1],k,i);
@@ -30,7 +30,19 @@ void ecb_decrypt(uint32_t * v, const uint32_t k[4], int nb_blocks) {
 }
 
 void cbc_encrypt(uint32_t * v, uint32_t vect[2], const uint32_t k[4], int nb_blocks) {
-    //TODO
+    for (int i = 0; i < nb_blocks; i += 2){
+    	/* print original block*/
+    	printf("Plaintext:\n");
+	printf("v[%d]: %u\n", i, *(v+i));
+	printf("v[%d]: %u\n", i+1, *(v+i+1));
+
+	    *(v+i)=F((*v^vect[0]),k,i);
+	    *(v+i+1)=F(*(v+i),k,i);
+	/*print result*/
+	printf("Crypted blocks:\n");
+	printf("v[%d]: %u\n", i, *(v+i));
+	printf("v[%d]: %u\n", i+1, *(v+i+1));
+    }
 }
 
 void cbc_decrypt(uint32_t * v, uint32_t vect[2], const uint32_t k[4], int nb_blocks) {
@@ -86,5 +98,10 @@ int main(){
     printf("%u\n",v[0]);
     printf("%u\n",v[1]);
    
+    cbc_encrypt(v, vect, k, 8);
+    
+    printf("Plaintext:\n");
+    printf("%u\n",v[0]);
+    
     return 0;
 }
