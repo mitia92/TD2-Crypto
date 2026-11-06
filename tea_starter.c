@@ -25,7 +25,7 @@ void feistel_dec(uint32_t v[2], const uint32_t k[4]) {
     for (int i = 63; i >= 0; i--) {
         uint32_t tmp = v1;
         v1 = v0;
-        v0 = tmp + 1 + (~F(v1,k,i)); // tmp - F(v1,k,i)
+        v0 = tmp - F(v1,k,i); //tmp + 1 + (~F(v1,k,i)); // 
     }
     v[0]=v0; v[1]=v1;
 }
@@ -49,13 +49,27 @@ void cbc_encrypt(uint32_t * v, uint32_t vect[2], const uint32_t k[4], int nb_blo
     //TODO
     
     for (uint32_t i = 0; i < nb_blocks; i++){
-        feistel_enc(((v[i*2]) ^ (vect[0])), k);
+        //feistel_enc(&(v[i*2] ^ vect[0]), k);
+        uint32_t block[2] = {
+            v[i*2] ^ vect[0],
+            v[i*2 + 1] ^ vect[1]
+        }; // on crée un block qui représente le couple (v[0],v[1]) ainsi de suite ...
+        feistel_enc(block,k);
+        v[i*2] = block[0];
+        v[i*2 + 1] = block[1];
+        vect[0] = v[i*2];
+        vect[1] = v[i*2 + 1];
     }
     
 }
 
 void cbc_decrypt(uint32_t * v, uint32_t vect[2], const uint32_t k[4], int nb_blocks) {
     //TODO
+    for (uint32_t i = 0; i < nb_blocks; i++){
+        uint32_t block[2] = {
+            feistel_dec(&v[i])
+        }
+    }
 }
 
 void ofb_stream(uint32_t* stream, uint32_t vect[2], const uint32_t k[4], int nb_blocks) {
