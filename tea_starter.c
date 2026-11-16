@@ -67,13 +67,37 @@ void cbc_decrypt(uint32_t * v, uint32_t vect[2], const uint32_t k[4], int nb_blo
     //TODO
     for (uint32_t i = 0; i < nb_blocks; i++){
         uint32_t block[2] = {
-            feistel_dec(&v[i])
-        }
+            v[i*2],
+            v[i*2 + 1]
+        };
+
+        feistel_dec(&v[2*i],k);
+        v[i*2] = v[i*2] ^ vect[0];
+        v[i*2 + 1] = v[i*2 + 1] ^ vect[1];  
+        // v[i*2] = block[0];
+        // v[i*2 + 1] = block[1];
+        vect[0] = block[0];
+        vect[1] = block[1];
+        
+          
     }
 }
 
 void ofb_stream(uint32_t* stream, uint32_t vect[2], const uint32_t k[4], int nb_blocks) {
     //TODO
+
+    for (uint32_t i = 0; i < nb_blocks; i++){
+        uint32_t block[2] = {
+            vect[0],
+            vect[1]
+        };
+        
+        feistel_enc(block, k);
+        stream[0] = 
+        stream[1] = 
+        vect[0] = v[i*2]
+
+    }
 }
 
 void ofb_encrypt(uint32_t * v, uint32_t * stream, int nb_blocks) {
@@ -146,6 +170,23 @@ int main(){
     cbc_encrypt(v,vect,k,4);
 
     printf("cbc ciphertext:\n");
+    printf("%u\n",v[0]);
+    printf("%u\n",v[1]);
+    printf("%u\n",v[2]);
+    printf("%u\n",v[3]);
+    printf("%u\n",v[4]);
+    printf("%u\n",v[5]);
+    printf("%u\n",v[6]);
+    printf("%u\n",v[7]);
+
+    //Initialisation vector
+    vect[0] = 0b00101101110101110101110010110001;
+    vect[1] = 0b01110101101101100010101101010011;
+    
+
+    cbc_decrypt(v,vect,k,4);
+
+    printf("cbc decryption:\n");
     printf("%u\n",v[0]);
     printf("%u\n",v[1]);
     printf("%u\n",v[2]);
