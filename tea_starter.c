@@ -113,42 +113,41 @@ void ofb_encrypt(uint32_t * v, uint32_t * stream, int nb_blocks) {
     }
 }
 
-void hash(uint32_t * v, uint32_t vect[2], int nb_block) {
+void hash(uint32_t * v, uint32_t vect[4], int nb_block) {
     //TODO
-    uint32_t block[2] = {
-        vect[0],
-        vect[1]
-    };
-
     for (int i = 0; i < nb_block; i++){
-        ecb_encrypt(block,&v[i*4],1);
+        uint32_t block[4] = {vect[0], vect[1], vect[2], vect[3};
+        
+        ecb_encrypt(block,&v[i*4],2);
 
         vect[0] = vect[0] ^ block[0];
         vect[1] = vect[1] ^ block[1];
+        vect[2] = vect[2] ^ block[2];
+        vect[3] = vect[3] ^ block[3];
     }
 }
 
 void hash_mac(const uint32_t *v, uint32_t vect[2],
               const uint32_t k[4], int nb_blocks) {
-    uint32_t interieur[4 * (nb_blocks + 1)];
-    uint32_t h[2] = {vect[0], vect[1]};
+    uint32_t hi[4 * (nb_blocks + 1)];
+    uint32_t hf[2] = {vect[0], vect[1]};
 
     for (int i = 0; i < 4; i++) {
-        interieur[i] = k[i];
+        hi[i] = k[i];
     }
 
     for (int i = 0; i < 4 * nb_blocks; i++) {
-        interieur[4 + i] = v[i];
+        hi[4 + i] = v[i];
     }
 
-    hash(interieur, h, nb_blocks + 1);
+    hash(hi, h, nb_blocks + 1);
 
-    uint32_t exterieur[8] = {
+    uint32_t hf[8] = {
         k[0], k[1], k[2], k[3],
         h[0], h[1], 0, 0
     };
 
-    hash(exterieur, vect, 2);
+    hash(hf, vect, 2);
 }
 
 int hash_mac_verification(const uint32_t *v, const uint32_t c[2],
