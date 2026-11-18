@@ -128,6 +128,39 @@ void hash(uint32_t * v, uint32_t vect[2], int nb_block) {
     }
 }
 
+void hash_mac(const uint32_t *v, uint32_t vect[2],
+              const uint32_t k[4], int nb_blocks) {
+    uint32_t interieur[4 * (nb_blocks + 1)];
+    uint32_t h[2] = {vect[0], vect[1]};
+
+    for (int i = 0; i < 4; i++) {
+        interieur[i] = k[i];
+    }
+
+    for (int i = 0; i < 4 * nb_blocks; i++) {
+        interieur[4 + i] = v[i];
+    }
+
+    hash(interieur, h, nb_blocks + 1);
+
+    uint32_t exterieur[8] = {
+        k[0], k[1], k[2], k[3],
+        h[0], h[1], 0, 0
+    };
+
+    hash(exterieur, vect, 2);
+}
+
+int hash_mac_verification(const uint32_t *v, const uint32_t c[2],
+                          const uint32_t vect[2], const uint32_t k[4],
+                          int nb_blocks) {
+    uint32_t calcule[2] = {vect[0], vect[1]};
+
+    hash_mac(v, calcule, k, nb_blocks);
+
+    return calcule[0] == c[0] && calcule[1] == c[1];
+}
+
 
 
 int main(){
